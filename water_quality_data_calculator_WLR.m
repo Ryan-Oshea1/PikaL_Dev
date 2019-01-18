@@ -1,5 +1,5 @@
 %function [MAPE,RMSE,corr_coeff_ratio,not_nan_loc,predicted_beta,forty_deg_red_reflectance_numer] = water_quality_data_calculator_WLR(  WLR, Ed, WLR_lambda, Ed_lambda, water_quality_parameter_times, water_quality_parameter_values, wavelength_range_numer,wavelength_range_denom,order,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_pixel_start,spatial_pixel_end,angle_spacing,indices_training,indices_validation)
-function [MAPE,RMSE,corr_coeff_ratio,not_nan_loc,predicted_beta,forty_deg_red_reflectance_numer] = water_quality_data_calculator_WLR(  WLR, Ed, WLR_lambda, Ed_lambda, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer,wavelength_range_denom,order,noise_cutoff,noise_min,indices_training,indices_validation,srg_correction,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,ls_wavelengths,srs_spectrum,all_images)
+function [MAPE,RMSE,corr_coeff_ratio,not_nan_loc,predicted_beta,forty_deg_red_reflectance_numer] = water_quality_data_calculator_WLR(  WLR, Ed, WLR_lambda, Ed_lambda, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer,wavelength_range_denom,order,noise_cutoff,noise_min,indices_training,indices_validation,srg_correction,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,ls_wavelengths,srs_spectrum,all_images,chl_or_beta,camera_wavelengths)
 
 %clear forty_deg_red_reflectance_numer forty_deg_reflectance_denom   
 %clear forty_deg_red_reflectance
@@ -9,6 +9,7 @@ function [MAPE,RMSE,corr_coeff_ratio,not_nan_loc,predicted_beta,forty_deg_red_re
 % WLR = spectrum835D;
 %order = 2
 %interpolate Ed to WLR wavelengths
+
 Ed_wlr_lambda = interp1(Ed_lambda,Ed,WLR_lambda);
 
 %calculate Rrs of WLR
@@ -17,6 +18,9 @@ Rrs_wlr = WLR./Ed_wlr_lambda;
 %calculate the sample points based off of the input wavelength range
 %wavelength_range_numer = 540:560;
 %wavelength_range_denom = 480:500;
+if(srg_correction == 1)
+    WLR_lambda = camera_wavelengths;
+end
 
 pixel_range_numer = ((WLR_lambda - min(wavelength_range_numer))>0).*((WLR_lambda - max(wavelength_range_numer))<0);
 pixel_range_numer = find(pixel_range_numer);
@@ -85,7 +89,7 @@ validation_attempts=0;
 %                         %optimize!
 %                         minimization_parameters = fmincon(minimization_function_rrs_handle,pgxd_0,[],[],[],[],lower_bounds,upper_bounds );
 %                         [err, pgxd_0, rrs_mod, rrs_mea, bbp_650] = rrs_optimization_func(minimization_parameters,wavelengths_rrs_opt,trs,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,trs_wavelengths,srs_wavelengths);
-
+                        if(chl_or_beta == 1)
                         value_numer = nanmean(nanmean(trs(pixel_range_numer)));
                         value_numer2 = nanmean(nanmean(trs(pixel_range_numer2)));
                         value_numer3 = nanmean(nanmean(trs(pixel_range_numer3)));
@@ -93,6 +97,12 @@ validation_attempts=0;
                         value_numer = max([value_numer,value_numer2,value_numer3]);
 
                         value_denom = nanmean(nanmean(trs(pixel_range_denom)));
+                        else
+                        value_numer = nanmean(nanmean(trs(pixel_range_numer)));
+                        value_denom = nanmean(nanmean(trs(pixel_range_denom)));
+                            
+                        end
+                        
 %                     else
 %                     value_numer = NaN;
 %                     value_denom = NaN;
@@ -101,6 +111,8 @@ validation_attempts=0;
 %                     end
                 end
             else
+              if(chl_or_beta == 1)  
+                
             value_numer = nanmean(nanmean(Rrs_wlr(pixel_range_numer,i)));
             value_numer2 = nanmean(nanmean(Rrs_wlr(pixel_range_numer2,i)));
             value_numer3 = nanmean(nanmean(Rrs_wlr(pixel_range_numer3,i)));
@@ -108,6 +120,11 @@ validation_attempts=0;
             value_numer = max([value_numer,value_numer2,value_numer3]);
 
             value_denom = nanmean(nanmean(Rrs_wlr(pixel_range_denom,i)));
+              else
+            value_numer = nanmean(nanmean(Rrs_wlr(pixel_range_numer,i)));
+            value_denom = nanmean(nanmean(Rrs_wlr(pixel_range_denom,i)));   
+              end
+              
          end
             if( ((noise_min < value_numer) && (value_numer < noise_cutoff)) && ((noise_min < value_denom) && (value_denom < noise_cutoff)))
                 forty_deg_red_reflectance_numer(i,:) = value_numer;
@@ -136,11 +153,22 @@ validation_attempts=0;
      not_nan_loc = not_nan_loc(not_nan_loc_loc);
 training_successes = length(not_nan_loc);
 
+              if(chl_or_beta == 1)  
     y = log10((water_quality_parameter_values_chl(not_nan_loc))');  
     x = log10(forty_deg_red_reflectance_numer(not_nan_loc)');
     p = polyfit(x,y,order);
     y1= polyval(p,x);
-  %    figure(7); scatter(x,y); hold on; scatter(x,y1); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
+              else
+%     y = ((water_quality_parameter_values_chl(not_nan_loc))');  
+%     x = (forty_deg_red_reflectance_numer(not_nan_loc)');
+%     p = polyfit(x,y,order);
+%     y1= polyval(p,x);    
+    y = ((water_quality_parameter_values_chl(not_nan_loc))');  %actual
+    x = forty_deg_red_reflectance_numer(not_nan_loc) - forty_deg_reflectance_denom(not_nan_loc) + forty_deg_red_reflectance_numer(not_nan_loc)./forty_deg_reflectance_denom(not_nan_loc); %predicted
+    p = fit(x,y','rat01');
+    y1= p(x);
+              end
+      figure(7); scatter(x,y); hold on; scatter(x,y1); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
 
 
 clear forty_deg_red_reflectance_numer forty_deg_reflectance_denom 
@@ -160,6 +188,7 @@ for(i=indices_validation)
                 size_trs = size(finite_trs_loc);
                 
                 if(size_trs(1) <2)
+                    trs
                     value_numer = NaN;
                     value_denom = NaN;
                     disp('Setting to NaN due to trs not existing')
@@ -191,6 +220,7 @@ for(i=indices_validation)
 %                         %optimize!
 %                         minimization_parameters = fmincon(minimization_function_rrs_handle,pgxd_0,[],[],[],[],lower_bounds,upper_bounds );
 %                         [err, pgxd_0, rrs_mod, rrs_mea, bbp_650] = rrs_optimization_func(minimization_parameters,wavelengths_rrs_opt,trs,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,trs_wavelengths,srs_wavelengths);
+                        if(chl_or_beta == 1)
                         value_numer = nanmean(nanmean(trs(pixel_range_numer)));
                         value_numer2 = nanmean(nanmean(trs(pixel_range_numer2)));
                         value_numer3 = nanmean(nanmean(trs(pixel_range_numer3)));
@@ -198,6 +228,11 @@ for(i=indices_validation)
                         value_numer = max([value_numer,value_numer2,value_numer3]);
 
                         value_denom = nanmean(nanmean(trs(pixel_range_denom)));
+                        else
+                        value_numer = nanmean(nanmean(trs(pixel_range_numer)));
+                        value_denom = nanmean(nanmean(trs(pixel_range_denom)));
+                            
+                        end
 %                     else
 %                                             value_numer = NaN;
 %                     value_denom = NaN;
@@ -206,12 +241,19 @@ for(i=indices_validation)
 %                     end
                 end
             else
+              if(chl_or_beta == 1)  
+                
             value_numer = nanmean(nanmean(Rrs_wlr(pixel_range_numer,i)));
             value_numer2 = nanmean(nanmean(Rrs_wlr(pixel_range_numer2,i)));
             value_numer3 = nanmean(nanmean(Rrs_wlr(pixel_range_numer3,i)));
 
             value_numer = max([value_numer,value_numer2,value_numer3]);
+
             value_denom = nanmean(nanmean(Rrs_wlr(pixel_range_denom,i)));
+              else
+            value_numer = nanmean(nanmean(Rrs_wlr(pixel_range_numer,i)));
+            value_denom = nanmean(nanmean(Rrs_wlr(pixel_range_denom,i)));   
+              end
     end
         if( ((noise_min < value_numer) && (value_numer < noise_cutoff)) && ((noise_min < value_denom) && (value_denom < noise_cutoff)))
             forty_deg_red_reflectance_numer(i,:) = value_numer;
@@ -238,6 +280,8 @@ not_nan_loc = unique(find(not_nan_loc_finder)); %(~isnan(forty_deg_red_reflectan
  validation_successes = length(not_nan_loc);
 
  %ratio
+ if(chl_or_beta == 1)  
+
 red_green_ratio_pred = log10(forty_deg_red_reflectance_numer(not_nan_loc)');  
 predicted_beta = polyval(p,red_green_ratio_pred);
 
@@ -247,15 +291,32 @@ predicted_beta_holder(:) = polyval(p,red_green_ratio_pred);
  %   figure(35);subplot(211);scatter(red_green_ratio_pred,log10(water_quality_parameter_values_chl(not_nan_loc)),10,'r'); hold on; scatter(red_green_ratio_pred,predicted_beta,'g'); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
   %  subplot(212);scatter(10.^red_green_ratio_pred,10.^log10(water_quality_parameter_values_chl(not_nan_loc)),'k'); hold on; scatter(10.^red_green_ratio_pred,10.^predicted_beta,'r'); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
 
-
-% get correlation coefficient of Ratio and the NTU
-% get statistics
-
 ccr = corrcoef(10.^predicted_beta,(water_quality_parameter_values_chl(not_nan_loc)));
 corr_coeff_ratio = ccr(1,2)
 RMSE = sqrt(mean((water_quality_parameter_values_chl(not_nan_loc) - 10.^predicted_beta').^2));
 MAPE = 100*mean(abs((water_quality_parameter_values_chl(not_nan_loc)- 10.^predicted_beta')./water_quality_parameter_values_chl(not_nan_loc)));%mean absolute percentage error
 
+ else
+%      red_green_ratio_pred = (forty_deg_red_reflectance_numer(not_nan_loc)');  
+% predicted_beta = polyval(p,red_green_ratio_pred);
+% 
+% predicted_beta_holder(:) = polyval(p,red_green_ratio_pred);
+
+red_green_ratio_pred =  forty_deg_red_reflectance_numer(not_nan_loc)' - forty_deg_reflectance_denom(not_nan_loc)' + forty_deg_red_reflectance_numer(not_nan_loc)'./forty_deg_reflectance_denom(not_nan_loc)'; %predicted 
+predicted_beta = p(red_green_ratio_pred)';
+
+predicted_beta_holder(:).value = predicted_beta;
+
+  %  figure;scatter(red_green_ratio_pred,(water_quality_parameter_values_chl(not_nan_loc))); hold on; scatter(red_green_ratio_pred,predicted_beta); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
+ %   figure(35);subplot(211);scatter(red_green_ratio_pred,log10(water_quality_parameter_values_chl(not_nan_loc)),10,'r'); hold on; scatter(red_green_ratio_pred,predicted_beta,'g'); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
+  %  subplot(212);scatter(10.^red_green_ratio_pred,10.^log10(water_quality_parameter_values_chl(not_nan_loc)),'k'); hold on; scatter(10.^red_green_ratio_pred,10.^predicted_beta,'r'); xlabel('Ratio'); ylabel('predicted and actual'); legend('Actual conc', 'Predicted Conc')
+
+ccr = corrcoef(predicted_beta,(water_quality_parameter_values_chl(not_nan_loc)));
+corr_coeff_ratio = ccr(1,2)
+RMSE = sqrt(mean((water_quality_parameter_values_chl(not_nan_loc) - predicted_beta').^2));
+MAPE = 100*mean(abs((water_quality_parameter_values_chl(not_nan_loc)- predicted_beta')./water_quality_parameter_values_chl(not_nan_loc)));%mean absolute percentage error
+
+ end
 
 [min_MAPE_val,min_MAPE_loc] = min(MAPE);
 %max value of beta

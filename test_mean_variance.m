@@ -132,7 +132,7 @@ camera_wavelength_row = 3 ;
 camera_wavelength_columns = 1:150;
      xrange = 79:228;
      yrange = 132:356;
-     spatial_range = 200:225;
+     spatial_range = 1:25;
 
 %start_point = 1289
 % 506/561 are dark high chl, light high chl, 4027,4083 are dark/light of
@@ -307,7 +307,7 @@ end
       
       %%
       %plot median SNR's
-      %       figure(7);
+            figure(7);
       plot(camera_wavelengths(camera_wavelength_row,camera_wavelength_columns),nanmedian(spatial_SNR_uncorrected,2),'k-.','LineWidth',2);
       hold on;
       plot(camera_wavelengths(camera_wavelength_row,camera_wavelength_columns),nanmedian(spatial_SNR_polarized,2),'b-.','LineWidth',2);

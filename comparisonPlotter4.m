@@ -901,6 +901,7 @@ subplot(414); plot(chl_times_surface,chl_values_surface); hold on; plot(chl_time
 %load('/home/flagg/Dropbox (MIT)/PikaL_Dev/CodeBase/matlab/current_data_compiler/surfaceAndDepthData.mat')
 %start with a fresh value
 clear validation_structure
+clc
 for(randomization_count=1:30)
 tic
 close all
@@ -951,8 +952,16 @@ spatial_pixel_range = spatial_angle_start:spatial_angle_end;
 % Best working for surface chl
  wavelength_range_numer_chl = (480:505);%    -400; %wavelength minus offset (roughly)
  wavelength_range_denom_chl = (540:565);%    -400;
+%   wavelength_range_numer_beta = (575:625);%    -400; used on 01/04/19 data
+%  wavelength_range_denom_beta = (455:485);%    -400;
+   wavelength_range_numer_beta = (545:665);%    -400; used on 01/05/19 data
+ wavelength_range_denom_beta = (635:655);%    -400;
+ 
+ 
+ 
+ 
  %wavelength_range_denom_chl = (660:680);%    -400;
-
+order_beta = 2;
 %wavelength_range_numer_chl = (540:565)    ; %wavelength minus offset (roughly)
 %wavelength_range_denom_chl = (440:460)    ;
 
@@ -988,9 +997,9 @@ indices_data = unique_days;
     %make the unique trainging and validation data for beta and cdom
     if (randomize_days == 1)
 for(i=1:length(unique_days))
-    if(indices_data_shuffled(i) >100) %100 is where surface data actually turns on
+    if(indices_data_shuffled(i) >100) %100 is where surface data actually turns on, i.e. beta values
         matching_days = find(day_of_year == indices_data_shuffled(i));
-        if(i<((length(unique_days)) *proportion_training)) % subtract 18 to account for missing surface data
+        if(i<((length(unique_days)-18) *proportion_training)) % subtract 18 to account for missing surface data
         indices_training_days = [indices_training_days matching_days];
         else
            indices_validation_days =  [indices_validation_days matching_days];
@@ -1020,22 +1029,73 @@ end
 
   %indices_validation_days_chl = [3514 2063]
    % call functions to plot wqp data for chl
-[angle_center_chl,MAPE_chl,RMSE_chl,corr_coeff_ratio_chl,not_nan_loc_chl,predicted_beta_chl,forty_deg_red_reflectance_numer_chl] = water_quality_data_calculator(  all_images, camera_wavelengths, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum);
-[angle_center_chl_pol,MAPE_chl_pol,RMSE_chl_pol,corr_coeff_ratio_chl_pol,not_nan_loc_chl_pol,predicted_beta_chl_pol,forty_deg_red_reflectance_numer_chl_pol] = water_quality_data_calculator(  all_images, camera_wavelengths,  water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array_pol,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum);
-%predicted_beta_chl = 10.^predicted_beta_chl;
-%predicted_beta_chl_pol = 10.^predicted_beta_chl_pol;
-%srg
-[angle_center_chl_srg,MAPE_chl_srg,RMSE_chl_srg,corr_coeff_ratio_chl_srg,not_nan_loc_chl_srg,predicted_beta_chl_srg,forty_deg_red_reflectance_numer_chl_srg] = water_quality_data_calculator(  all_images, camera_wavelengths, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum);
-                         %[angle_center_chl_pol_srg,MAPE_chl_pol_srg,RMSE_chl_pol_srg,corr_coeff_ratio_chl_pol_srg,not_nan_loc_chl_pol_srg,predicted_beta_chl_pol_srg,forty_deg_red_reflectance_numer_chl_pol_srg] = water_quality_data_calculator(  all_images, camera_wavelengths,  water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array_pol,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum);
-%WLR data for chl
-verbose = 1
-[MAPE_wlr_chl,RMSE_wlr_chl,corr_coeff_ratio_wlr_chl,not_nan_loc_wlr_chl,predicted_beta_wlr_chl,forty_deg_red_reflectance_numer_wlr_chl] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,noise_cutoff,noise_min,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images);
-%WLR Srg Correction
+% [angle_center_chl,MAPE_chl,RMSE_chl,corr_coeff_ratio_chl,not_nan_loc_chl,predicted_beta_chl,forty_deg_red_reflectance_numer_chl] = water_quality_data_calculator(  all_images, camera_wavelengths, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,1);
+% [angle_center_chl_pol,MAPE_chl_pol,RMSE_chl_pol,corr_coeff_ratio_chl_pol,not_nan_loc_chl_pol,predicted_beta_chl_pol,forty_deg_red_reflectance_numer_chl_pol] = water_quality_data_calculator(  all_images, camera_wavelengths,  water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array_pol,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,1);
+% [angle_center_chl_srg,MAPE_chl_srg,RMSE_chl_srg,corr_coeff_ratio_chl_srg,not_nan_loc_chl_srg,predicted_beta_chl_srg,forty_deg_red_reflectance_numer_chl_srg] = water_quality_data_calculator(  all_images, camera_wavelengths, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,1);
+% [MAPE_wlr_chl,RMSE_wlr_chl,corr_coeff_ratio_wlr_chl,not_nan_loc_wlr_chl,predicted_beta_wlr_chl,forty_deg_red_reflectance_numer_wlr_chl] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,noise_cutoff,noise_min,indices_training_days_chl,indices_validation_days_chl,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images,1);
+% [MAPE_wlr_chl_srg,RMSE_wlr_chl_srg,corr_coeff_ratio_wlr_chl_srg,not_nan_loc_wlr_chl_srg,predicted_beta_wlr_chl_srg,forty_deg_red_reflectance_numer_wlr_chl_srg] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,noise_cutoff,noise_min,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images,1,camera_wavelengths(3,:));
 
-[MAPE_wlr_chl_srg,RMSE_wlr_chl_srg,corr_coeff_ratio_wlr_chl_srg,not_nan_loc_wlr_chl_srg,predicted_beta_wlr_chl_srg,forty_deg_red_reflectance_numer_wlr_chl_srg] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_chl, wavelength_range_numer_chl,wavelength_range_denom_chl,order_chl,noise_cutoff,noise_min,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images);
+%beta
+verbose = 0;
+[angle_center_beta,MAPE_beta,RMSE_beta,corr_coeff_ratio_beta,not_nan_loc_beta,predicted_beta_beta,forty_deg_red_reflectance_numer_beta] = water_quality_data_calculator(all_images, camera_wavelengths, water_quality_parameter_times_beta, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days,indices_validation_days,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,2);
+[angle_center_beta_pol,MAPE_beta_pol,RMSE_beta_pol,corr_coeff_ratio_beta_pol,not_nan_loc_beta_pol,predicted_beta_beta_pol,forty_deg_red_reflectance_numer_beta_pol] = water_quality_data_calculator(all_images, camera_wavelengths, water_quality_parameter_times_beta, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,set_num,set_num_name_rrs_array_pol,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days,indices_validation_days,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,2);
+[angle_center_beta_srg,MAPE_beta_srg,RMSE_beta_srg,corr_coeff_ratio_beta_srg,not_nan_loc_beta_srg,predicted_beta_beta_srg,forty_deg_red_reflectance_numer_beta_srg] = water_quality_data_calculator(all_images, camera_wavelengths, water_quality_parameter_times_chl, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,set_num,set_num_name_rrs_array,noise_cutoff,noise_min,tss_range_end,verbose,spatial_angle_start,spatial_angle_end,angle_spacing,indices_training_days,indices_validation_days,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,2);
+[MAPE_wlr_beta,RMSE_wlr_beta,corr_coeff_ratio_wlr_beta,not_nan_loc_wlr_beta,predicted_beta_wlr_beta,forty_deg_red_reflectance_numer_wlr_beta] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,noise_cutoff,noise_min,indices_training_days,indices_validation_days,0,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images,2);
+[MAPE_wlr_beta_srg,RMSE_wlr_beta_srg,corr_coeff_ratio_wlr_beta_srg,not_nan_loc_wlr_beta_srg,predicted_beta_wlr_beta_srg,forty_deg_red_reflectance_numer_wlr_beta_srg] = water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_chl, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,noise_cutoff,noise_min,indices_training_days,indices_validation_days,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images,2,camera_wavelengths(3,:)); %water_quality_data_calculator_WLR(  spectrum835D, spectrum8396, wavelength835D, wavelength8396, water_quality_parameter_times_beta, water_quality_parameter_values_beta, wavelength_range_numer_beta,wavelength_range_denom_beta,order_beta,noise_cutoff,noise_min,indices_training_days_chl,indices_validation_days_chl,1,wavelengths_rrs_opt,srs,aph_const,aph_coef,aw,bbw,g_p_9,g_p_10,g_p_11,sdg,fresnel,gw,sub_to_above_1,sub_to_above_2,wavelength835B,srs_spectrum,all_images,1);
 
 toc
 
+%FOR BETA ONLY %%%%%%%%%%%
+%predicted chl
+validation_structure(randomization_count).predicted_beta_beta=predicted_beta_beta;
+validation_structure(randomization_count).predicted_beta_beta_pol=predicted_beta_beta_pol;
+validation_structure(randomization_count).predicted_beta_beta_srg=predicted_beta_beta_srg;
+validation_structure(randomization_count).predicted_beta_wlr_beta=predicted_beta_wlr_beta;
+validation_structure(randomization_count).predicted_beta_wlr_beta_srg=predicted_beta_wlr_beta_srg;
+
+%errors
+validation_structure(randomization_count).forty_deg_red_reflectance_numer_beta=forty_deg_red_reflectance_numer_beta;
+validation_structure(randomization_count).forty_deg_red_reflectance_numer_beta_pol=forty_deg_red_reflectance_numer_beta_pol;
+validation_structure(randomization_count).forty_deg_red_reflectance_numer_beta_srg=forty_deg_red_reflectance_numer_beta_srg;
+validation_structure(randomization_count).forty_deg_red_reflectance_numer_wlr_beta=forty_deg_red_reflectance_numer_wlr_beta;
+validation_structure(randomization_count).forty_deg_red_reflectance_numer_wlr_beta_srg=forty_deg_red_reflectance_numer_wlr_beta_srg;
+
+%angles
+ validation_structure(randomization_count).angle_center_beta=angle_center_beta;
+ validation_structure(randomization_count).angle_center_beta_pol=angle_center_beta_pol;
+ validation_structure(randomization_count).angle_center_beta_srg=angle_center_beta_srg;
+
+%MAPE
+validation_structure(randomization_count).MAPE_beta=MAPE_beta;
+validation_structure(randomization_count).MAPE_beta_pol=MAPE_beta_pol;
+validation_structure(randomization_count).MAPE_beta_srg=MAPE_beta_srg;
+validation_structure(randomization_count).MAPE_wlr_beta=MAPE_wlr_beta;
+validation_structure(randomization_count).MAPE_wlr_beta_srg=MAPE_wlr_beta_srg;
+
+%RMSE
+validation_structure(randomization_count).RMSE_beta=RMSE_beta;
+validation_structure(randomization_count).RMSE_beta_pol=RMSE_beta_pol;
+validation_structure(randomization_count).RMSE_beta_srg=RMSE_beta_srg;
+validation_structure(randomization_count).RMSE_wlr_beta=RMSE_wlr_beta;
+validation_structure(randomization_count).RMSE_wlr_beta_srg=RMSE_wlr_beta_srg;
+
+%Corr Coef
+validation_structure(randomization_count).corr_coeff_ratio_beta=corr_coeff_ratio_beta;
+validation_structure(randomization_count).corr_coeff_ratio_beta_pol=corr_coeff_ratio_beta_pol;
+validation_structure(randomization_count).corr_coeff_ratio_beta_srg=corr_coeff_ratio_beta_srg;
+validation_structure(randomization_count).corr_coeff_ratio_wlr_beta=corr_coeff_ratio_wlr_beta;
+validation_structure(randomization_count).corr_coeff_ratio_wlr_beta_srg=corr_coeff_ratio_wlr_beta_srg;
+
+%Not Nan Loc
+validation_structure(randomization_count).not_nan_loc_beta=not_nan_loc_beta;
+validation_structure(randomization_count).not_nan_loc_beta_pol=not_nan_loc_beta_pol;
+validation_structure(randomization_count).not_nan_loc_beta_srg=not_nan_loc_beta_srg;
+validation_structure(randomization_count).not_nan_loc_wlr_beta=not_nan_loc_wlr_beta;
+validation_structure(randomization_count).not_nan_loc_wlr_beta_srg=not_nan_loc_wlr_beta_srg;
+
+
+
+%FOR CHL ONLY%%%%%%%%%%%%%%%%%%
 %predicted chl
 validation_structure(randomization_count).predicted_beta_chl=predicted_beta_chl;
 validation_structure(randomization_count).predicted_beta_chl_pol=predicted_beta_chl_pol;
@@ -1088,37 +1148,106 @@ end
 
 %%
 clear array_corr_coef_chl array_corr_coef_chl_pol array_corr_coef_chl_srg array_corr_coef_wlr_chl array_corr_coef_wlr_chl_srg
-randomization_count  = 30
+clear array_corr_coef_beta array_corr_coef_beta_pol array_corr_coef_beta_srg array_corr_coef_wlr_beta array_corr_coef_wlr_beta_srg
+
+%randomization_count  = 30
 for(j=1:randomization_count)
     array_corr_coef_chl(j,:) = (validation_structure(j).corr_coeff_ratio_chl)
     array_corr_coef_chl_pol(j,:) = (validation_structure(j).corr_coeff_ratio_chl_pol)
     array_corr_coef_chl_srg(j,:) = (validation_structure(j).corr_coeff_ratio_chl_srg)
     array_corr_coef_wlr_chl(j,:) = (validation_structure(j).corr_coeff_ratio_wlr_chl)
     array_corr_coef_wlr_chl_srg(j,:) = (validation_structure(j).corr_coeff_ratio_wlr_chl_srg)
-
+    
+   array_corr_coef_beta(j,:) = (validation_structure(j).corr_coeff_ratio_beta)
+   array_corr_coef_beta_pol(j,:) = (validation_structure(j).corr_coeff_ratio_beta_pol)
+   array_corr_coef_beta_srg(j,:) = (validation_structure(j).corr_coeff_ratio_beta_srg)
+   array_corr_coef_wlr_beta(j,:) = (validation_structure(j).corr_coeff_ratio_wlr_beta)
+   array_corr_coef_wlr_beta_srg(j,:) = (validation_structure(j).corr_coeff_ratio_wlr_beta_srg)
+   
+   %%%MAPE
+    array_MAPE_chl(j,:) = (validation_structure(j).MAPE_chl)
+    array_MAPE_chl_pol(j,:) = (validation_structure(j).MAPE_chl_pol)
+    array_MAPE_chl_srg(j,:) = (validation_structure(j).MAPE_chl_srg)
+    array_MAPE_wlr_chl(j,:) = (validation_structure(j).MAPE_wlr_chl)
+    array_MAPE_wlr_chl_srg(j,:) = (validation_structure(j).MAPE_wlr_chl_srg)
+    
+    array_MAPE_beta(j,:) = (validation_structure(j).MAPE_beta)
+    array_MAPE_beta_pol(j,:) = (validation_structure(j).MAPE_beta_pol)
+    array_MAPE_beta_srg(j,:) = (validation_structure(j).MAPE_beta_srg)
+    array_MAPE_wlr_beta(j,:) = (validation_structure(j).MAPE_wlr_beta)
+    array_MAPE_wlr_beta_srg(j,:) = (validation_structure(j).MAPE_wlr_beta_srg)
 end
 %
 %calculate median values for correlation coefficient graph
 %the median values remove variations due to individual training sets, since
-%my training set is so small
-corr_coeff_ratio_chl_median = median(array_corr_coef_chl,1)
-corr_coeff_ratio_chl_pol_median = median(array_corr_coef_chl_pol,1)
-corr_coeff_ratio_chl_srg_median = median(array_corr_coef_chl_srg,1)
-corr_coeff_ratio_wlr_chl_median = median(array_corr_coef_wlr_chl)
-corr_coeff_ratio_wlr_chl_srg_median = median(array_corr_coef_wlr_chl_srg)
+MAPE_chl_median = median(array_MAPE_chl,1);
+MAPE_chl_pol_median = median(array_MAPE_chl_pol,1);
+MAPE_chl_srg_median = median(array_MAPE_chl_srg,1);
+MAPE_wlr_chl_median = median(array_MAPE_wlr_chl,1);
+MAPE_wlr_chl_srg_median = median(array_MAPE_wlr_chl_srg,1);
 
-std_chl = std(array_corr_coef_chl)
-std_chl_pol = std(array_corr_coef_chl_pol)
-std_chl_srg = std(array_corr_coef_chl_srg)
-std_wlr_chl = std(array_corr_coef_wlr_chl)
-std_wlr_chl_srg = std(array_corr_coef_wlr_chl_srg)
+[MAPE_chl_median_min_val, MAPE_chl_median_min_loc] = min(MAPE_chl_median)
+[MAPE_chl_pol_median_min_val, MAPE_chl_pol_median_min_loc] = min(MAPE_chl_pol_median)
+[MAPE_chl_srg_median_min_val, MAPE_chl_srg_median_min_loc] = min(MAPE_chl_srg_median)
+[MAPE_wlr_chl_median_min_val, MAPE_wlr_chl_median_min_loc] = min(MAPE_wlr_chl_median)
+[MAPE_wlr_chl_srg_median_min_val, MAPE_wlr_chl_srg_median_min_loc] = min(MAPE_wlr_chl_srg_median)
 
-
-[max_val_chl, max_angle_loc_chl] = max(corr_coeff_ratio_chl_median)
-[max_val_chl_pol, max_angle_loc_chl_pol] = max(corr_coeff_ratio_chl_pol_median)
-[max_val_chl_srg, max_angle_loc_chl_srg] = max(corr_coeff_ratio_chl_srg_median)
+MAPE_chl_median_min_loc = spatial_pixel_angles(MAPE_chl_median_min_loc)
+MAPE_chl_pol_median_min_loc = spatial_pixel_angles(MAPE_chl_pol_median_min_loc)
+MAPE_chl_srg_median_min_loc = spatial_pixel_angles(MAPE_chl_srg_median_min_loc)
 
 
+corr_coeff_ratio_chl_median = median(array_corr_coef_chl,1);
+corr_coeff_ratio_chl_pol_median = median(array_corr_coef_chl_pol,1);
+corr_coeff_ratio_chl_srg_median = median(array_corr_coef_chl_srg,1);
+corr_coeff_ratio_wlr_chl_median = median(array_corr_coef_wlr_chl);
+corr_coeff_ratio_wlr_chl_srg_median = median(array_corr_coef_wlr_chl_srg);
+
+std_chl = std(array_corr_coef_chl);
+std_chl_pol = std(array_corr_coef_chl_pol);
+std_chl_srg = std(array_corr_coef_chl_srg);
+std_wlr_chl = std(array_corr_coef_wlr_chl);
+std_wlr_chl_srg = std(array_corr_coef_wlr_chl_srg);
+
+
+[max_val_chl, max_angle_loc_chl] = max(corr_coeff_ratio_chl_median);
+[max_val_chl_pol, max_angle_loc_chl_pol] = max(corr_coeff_ratio_chl_pol_median);
+[max_val_chl_srg, max_angle_loc_chl_srg] = max(corr_coeff_ratio_chl_srg_median);
+
+%%%for BETA here
+MAPE_beta_median = median(array_MAPE_beta,1);
+MAPE_beta_pol_median = median(array_MAPE_beta_pol,1);
+MAPE_beta_srg_median = median(array_MAPE_beta_srg,1);
+MAPE_wlr_beta_median = median(array_MAPE_wlr_beta,1);
+MAPE_wlr_beta_srg_median = median(array_MAPE_wlr_beta_srg,1);
+
+[MAPE_beta_median_min_val, MAPE_beta_median_min_loc] = min(MAPE_beta_median)
+[MAPE_beta_pol_median_min_val, MAPE_beta_pol_median_min_loc] = min(MAPE_beta_pol_median)
+[MAPE_beta_srg_median_min_val, MAPE_beta_srg_median_min_loc] = min(MAPE_beta_srg_median)
+[MAPE_wlr_beta_median_min_val, MAPE_wlr_beta_median_min_loc] = min(MAPE_wlr_beta_median)
+[MAPE_wlr_beta_srg_median_min_val, MAPE_wlr_beta_srg_median_min_loc] = min(MAPE_wlr_beta_srg_median)
+
+MAPE_beta_median_min_loc = spatial_pixel_angles(MAPE_beta_median_min_loc)
+MAPE_beta_pol_median_min_loc = spatial_pixel_angles(MAPE_beta_pol_median_min_loc)
+MAPE_beta_srg_median_min_loc = spatial_pixel_angles(MAPE_beta_srg_median_min_loc)
+
+corr_coeff_ratio_beta_median = median(array_corr_coef_beta,1);
+corr_coeff_ratio_beta_pol_median = median(array_corr_coef_beta_pol,1);
+corr_coeff_ratio_beta_srg_median = median(array_corr_coef_beta_srg,1);
+corr_coeff_ratio_wlr_beta_median = median(array_corr_coef_wlr_beta);
+corr_coeff_ratio_wlr_beta_srg_median = median(array_corr_coef_wlr_beta_srg);
+
+std_beta = std(array_corr_coef_beta);
+std_beta_pol = std(array_corr_coef_beta_pol);
+std_beta_srg = std(array_corr_coef_beta_srg);
+std_wlr_beta = std(array_corr_coef_wlr_beta);
+std_wlr_beta_srg = std(array_corr_coef_wlr_beta_srg);
+
+
+[max_val_beta, max_angle_loc_beta] = max(corr_coeff_ratio_beta_median);
+[max_val_beta_pol, max_angle_loc_beta_pol] = max(corr_coeff_ratio_beta_pol_median);
+[max_val_beta_srg, max_angle_loc_beta_srg] = max(corr_coeff_ratio_beta_srg_median);
+%%
 %
 %wavelength_range_numer_chl = (540:565)    ; %wavelength minus offset (roughly)
 %wavelength_range_denom_chl = (440:460)    ;
@@ -1143,7 +1272,14 @@ predicted_chl_pol_values_array = NaN([4612 40],'like',predicted_beta_chl(1).valu
 predicted_chl_srg_values_array = NaN([4612 40],'like',predicted_beta_chl(1).value(1));
 predicted_wlr_chl_values_array = NaN([4612 40],'like',predicted_beta_chl(1).value(1));
 predicted_wlr_chl_srg_values_array = NaN([4612 40],'like',predicted_beta_chl(1).value(1));
-for(k_count=1:30)  
+
+predicted_beta_values_array = NaN([4612 40],'like',predicted_beta_beta(1).value(1));
+predicted_beta_pol_values_array = NaN([4612 40],'like',predicted_beta_beta(1).value(1));
+predicted_beta_srg_values_array = NaN([4612 40],'like',predicted_beta_beta(1).value(1));
+predicted_wlr_beta_values_array = NaN([4612 40],'like',predicted_beta_beta(1).value(1));
+predicted_wlr_beta_srg_values_array = NaN([4612 40],'like',predicted_beta_beta(1).value(1));
+
+for(k_count=1:randomization_count)  
     for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_chl(max_angle_loc_chl).value))
         predicted_chl_values_array(validation_structure(k_count).not_nan_loc_chl(max_angle_loc_chl).value(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_chl(max_angle_loc_chl).value(not_nan_locations_count);
     end
@@ -1160,6 +1296,23 @@ for(k_count=1:30)
     end
     for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_wlr_chl_srg))
         predicted_wlr_chl_srg_values_array(validation_structure(k_count).not_nan_loc_wlr_chl_srg(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_wlr_chl_srg(not_nan_locations_count);
+    end
+    %%%%BETA VALUES beta
+    for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_beta(max_angle_loc_beta).value))
+        predicted_beta_values_array(validation_structure(k_count).not_nan_loc_beta(max_angle_loc_beta).value(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_beta(max_angle_loc_beta).value(not_nan_locations_count);
+    end
+    for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_beta_pol(max_angle_loc_beta_pol).value))
+        predicted_beta_pol_values_array(validation_structure(k_count).not_nan_loc_beta_pol(max_angle_loc_beta_pol).value(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_beta_pol(max_angle_loc_beta_pol).value(not_nan_locations_count);
+    end
+    
+    for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_beta_srg(max_angle_loc_beta_srg).value))
+        predicted_beta_srg_values_array(validation_structure(k_count).not_nan_loc_beta_srg(max_angle_loc_beta_srg).value(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_beta_srg(max_angle_loc_beta_srg).value(not_nan_locations_count);
+    end
+    for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_wlr_beta))
+        predicted_wlr_beta_values_array(validation_structure(k_count).not_nan_loc_wlr_beta(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_wlr_beta.value(not_nan_locations_count);
+    end
+    for(not_nan_locations_count = 1:length(validation_structure(k_count).not_nan_loc_wlr_beta_srg))
+        predicted_wlr_beta_srg_values_array(validation_structure(k_count).not_nan_loc_wlr_beta_srg(not_nan_locations_count),k_count) = validation_structure(k_count).predicted_beta_wlr_beta_srg.value(not_nan_locations_count);
     end
 end 
 %reg
@@ -1178,7 +1331,27 @@ non_nan_wlr_chl_values = find(~isnan(median_wlr_chl_values))
 median_wlr_chl_srg_values = nanmedian(10.^predicted_wlr_chl_srg_values_array,2)
 non_nan_wlr_chl_srg_values = find(~isnan(median_wlr_chl_srg_values))
 
+
+%%%% BETA
+%reg
+median_beta_values = nanmedian(predicted_beta_values_array,2)
+non_nan_beta_values = find(~isnan(median_beta_values))
+%pol
+median_beta_pol_values = nanmedian(predicted_beta_pol_values_array,2)
+non_nan_beta_pol_values = find(~isnan(median_beta_pol_values))
+%srg
+median_beta_srg_values = nanmedian(predicted_beta_srg_values_array,2)
+non_nan_beta_srg_values = find(~isnan(median_beta_srg_values))
+%wlr_chl
+median_wlr_beta_values = nanmedian(predicted_wlr_beta_values_array,2)
+non_nan_wlr_beta_values = find(~isnan(median_wlr_beta_values))
+%wlr_chl
+median_wlr_beta_srg_values = nanmedian(predicted_wlr_beta_srg_values_array,2)
+non_nan_wlr_beta_srg_values = find(~isnan(median_wlr_beta_srg_values))
+
+
 figure(46)
+subplot(211)
 scatter( water_quality_parameter_times_chl(non_nan_chl_values), median_chl_values(non_nan_chl_values),'k')%,'LineWidth',2)
 hold on
 scatter( water_quality_parameter_times_chl(non_nan_chl_pol_values), median_chl_pol_values(non_nan_chl_pol_values),'g')%,'LineWidth',2)
@@ -1194,6 +1367,12 @@ plot(water_quality_parameter_times_chl(non_nan_chl_values),water_quality_paramet
 hold on
 original_data_figure = plot(chl_datenums_depth_and_surface-4/24,chl_values_depth_and_surface,'b','LineWidth',.5)
 
+subplot(212)
+scatter( water_quality_parameter_times_chl(non_nan_beta_values), median_beta_values(non_nan_beta_values),'k')%,'LineWidth',2)
+hold on
+scatter( water_quality_parameter_times_chl(non_nan_beta_pol_values), median_beta_pol_values(non_nan_beta_pol_values),'g')%,'LineWidth',2)
+hold on
+%scatter(water_quality_parameter_times_beta(non_nan_beta_values),water_quality_parameter_values_beta((non_nan_beta_values)))
 %plot(water_quality_parameter_times_chl(non_nan_chl_values),water_quality_parameter_values_chl((non_nan_chl_values)))
 datetickzoom
 legend('Camera Raw','Camera Polarized', 'Camera SSGC',  'Radiometer Raw','Radiometer SSGC', 'Unquenched Interpolated','Fluorometer Derived'); grid on; %'Pol. Srg',
@@ -1273,6 +1452,47 @@ for(day_number = 83:158)
  nan_median_daily_wlr_chl_srg(day_number,median_value) = nanmedian(((median_wlr_chl_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
  nan_median_daily_wlr_chl_srg(day_number,std_loc) = nanstd(((median_wlr_chl_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
   nan_median_daily_wlr_chl_srg(day_number,truth_val) = median(water_quality_parameter_values_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+  
+  
+ %%%%%BETA VALUES beta 
+     non_nan_locations_finder=(((((find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number))))).*(~isnan((((median_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))))))');
+ %find(non_nan_locations_finder)
+ nan_median_daily_beta(day_number,median_time) = median(water_quality_parameter_times_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+ nan_median_daily_beta(day_number,median_value) = nanmedian(((median_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_beta(day_number,std_loc) = nanstd(((median_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_beta(day_number,truth_val) = median(water_quality_parameter_values_beta(non_nan_locations_finder( find(non_nan_locations_finder))));
+
+ %pol
+    non_nan_locations_finder=(((((find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number))))).*(~isnan((((median_beta_pol_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))))))');
+ %find(non_nan_locations_finder)
+ nan_median_daily_beta_pol(day_number,median_time) = median(water_quality_parameter_times_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+ nan_median_daily_beta_pol(day_number,median_value) = nanmedian(((median_beta_pol_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_beta_pol(day_number,std_loc) = nanstd(((median_beta_pol_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+  nan_median_daily_beta_pol(day_number,truth_val) = median(water_quality_parameter_values_beta(non_nan_locations_finder( find(non_nan_locations_finder))));
+
+  %srg
+    non_nan_locations_finder=(((((find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number))))).*(~isnan((((median_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))))))');
+ %find(non_nan_locations_finder)
+ nan_median_daily_beta_srg(day_number,median_time) = median(water_quality_parameter_times_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+ nan_median_daily_beta_srg(day_number,median_value) = nanmedian(((median_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_beta_srg(day_number,std_loc) = nanstd(((median_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+  nan_median_daily_beta_srg(day_number,truth_val) = median(water_quality_parameter_values_beta(non_nan_locations_finder( find(non_nan_locations_finder))));
+
+   %wlr
+   non_nan_locations_finder=(((((find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number))))).*(~isnan((((median_wlr_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))))))');
+ %find(non_nan_locations_finder)
+ nan_median_daily_wlr_beta(day_number,median_time) = median(water_quality_parameter_times_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+ nan_median_daily_wlr_beta(day_number,median_value) = nanmedian(((median_wlr_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_wlr_beta(day_number,std_loc) = nanstd(((median_wlr_beta_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+  nan_median_daily_wlr_beta(day_number,truth_val) = median(water_quality_parameter_values_beta(non_nan_locations_finder( find(non_nan_locations_finder))));
+
+    %wlr _srg
+   non_nan_locations_finder=(((((find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number))))).*(~isnan((((median_wlr_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))))))');
+ %find(non_nan_locations_finder)
+ nan_median_daily_wlr_beta_srg(day_number,median_time) = median(water_quality_parameter_times_chl(non_nan_locations_finder( find(non_nan_locations_finder))));
+ nan_median_daily_wlr_beta_srg(day_number,median_value) = nanmedian(((median_wlr_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+ nan_median_daily_wlr_beta_srg(day_number,std_loc) = nanstd(((median_wlr_beta_srg_values(find(floor(water_quality_parameter_times_chl - datenum('01/01/2018')) == day_number)))));
+  nan_median_daily_wlr_beta_srg(day_number,truth_val) = median(water_quality_parameter_values_beta(non_nan_locations_finder( find(non_nan_locations_finder))));
 
 end
 day_range=83:158;
@@ -1305,6 +1525,7 @@ hold on
 %%
 %%
 figure(47)
+subplot(211)
 hold on
 %raw
 %  errorbar(nan_median_daily_chl(day_range,truth_val),nan_median_daily_chl(day_range,median_value),nan_median_daily_chl(day_range,std_loc),'ok','LineWidth',2,'LineStyle','none')
@@ -1325,7 +1546,7 @@ hold on
 % % %wlr _srg
 %  errorbar(nan_median_daily_wlr_chl_srg(day_range,truth_val),nan_median_daily_wlr_chl_srg(day_range,median_value),nan_median_daily_wlr_chl_srg(day_range,std_loc),'om','LineWidth',2,'LineStyle','none')
 % % %scatter( water_quality_parameter_times_chl(non_nan_wlr_chl_srg_values), median_wlr_chl_srg_values(non_nan_wlr_chl_srg_values),'p')%,'LineWidth',2)
-
+%subplot(211)
 
 
 scatter(nan_median_daily_chl(day_range,truth_val),nan_median_daily_chl(day_range,median_value),400,'Ok')
@@ -1352,14 +1573,14 @@ scatter(nan_median_daily_chl(day_range,truth_val),nan_median_daily_chl(day_range
 %original_data_figure = plot(chl_datenums_depth_and_surface-4/24,chl_values_depth_and_surface,'b','LineWidth',.5)
 % hold on
 % plot(.1:20,.1:20)
-title({['Remotely-Sensed vs. In situ Measured Chl (\mug/l)']})%
+title({['Remotely-Estimated vs. In-situ Measured Chl (\mug/l)']})%
 
 
 %median(validation_structure.MAPE_chl)
 %validation_structure(randomization_count).MAPE_chl_pol=MAPE_chl_pol;
 %validation_structure(randomization_count).MAPE_chl_srg=MAPE_chl_srg;
 
-disp(['  Min. MAPE Unpol.: ' num2str(min(MAPE_chl)) '   Min. MAPE Pol.: ' num2str(min(MAPE_chl_pol)) '   Min. MAPE Srg.: ' num2str(min(MAPE_chl_srg))  '   Min. MAPE WLR: ' num2str(min(MAPE_wlr_chl)) '   Min. MAPE WLR Srg: ' num2str(min(MAPE_wlr_chl_srg)) ]); %'   Min. MAPE Pol. Srg.: ' num2str(min(MAPE_chl_pol_srg))
+disp(['  Min. MAPE Unpol. CHL: ' num2str(min(MAPE_chl)) '   Min. MAPE Pol.: ' num2str(min(MAPE_chl_pol)) '   Min. MAPE Srg.: ' num2str(min(MAPE_chl_srg))  '   Min. MAPE WLR: ' num2str(min(MAPE_wlr_chl)) '   Min. MAPE WLR Srg: ' num2str(min(MAPE_wlr_chl_srg)) ]); %'   Min. MAPE Pol. Srg.: ' num2str(min(MAPE_chl_pol_srg))
 
 
 set(gca,'xscale','log')
@@ -1369,41 +1590,93 @@ hold on; plot(0.5:1:20,0.5:1:20,'k','LineWidth',2); hold off;
 hold on; plot(.4:1:20,(.4:1:20)*1.35,'-.k','LineWidth',2); hold off;
 hold on; plot(.7:1:20,(.7:1:20)*.65,'-.k','LineWidth',2); hold off;
 
+
 %scatter(nan_median_daily_chl(day_range,truth_val),nan_median_daily_chl(day_range,median_value),'k')
-ylabel('Remotely Sensed Chl (\mug/l)'); xlabel('In-Situ Measured Chl (\mug/l)'); 
+ylabel('Remotely-Estimated Chl a (\mug/l)'); xlabel('In-situ Measured Chl a (\mug/l)'); 
 legend('Camera Uncorrected','Camera Polarized', 'Camera SSGC',   '1:1','1:1+/-35%'); %'Radiometer Uncorrected','Radiometer SSGC',
 grid on; %'Pol. Srg'
-set(gca,'FontSize',30)
+set(gca,'FontSize',15)
 axis([0 14 0 20])
+
+subplot(212)
+scatter(nan_median_daily_beta(day_range,truth_val),nan_median_daily_beta(day_range,median_value),400,'Ok')
+hold on
+scatter(nan_median_daily_beta_pol(day_range,truth_val),nan_median_daily_beta_pol(day_range,median_value),2000,'.k')
+scatter(nan_median_daily_beta_srg(day_range,truth_val),nan_median_daily_beta_srg(day_range,median_value),400,'xk')
+hold off
+hold on; plot(0.0007:.001:.01,.0007:.001:.01,'k','LineWidth',2); hold off;
+hold on; plot(0.0007:.001:.01,(.0007:.001:.01)*1.35,'-.k','LineWidth',2); hold off;
+hold on; plot(0.0007:.001:.01,(.0007:.001:.01)*.65,'-.k','LineWidth',2); hold off;
+
+set(gca,'xscale','log')
+set(gca,'yscale','log')
+axis([0.0007 .01 0.0004 .01])
+grid on; %'Pol. Srg'
+title({['Remotely-Estimated vs. In-situ Measured \Beta_{650} (1/sr)']})%
+
+ylabel('Remotely-Estimated Beta_{650} (1/sr)'); xlabel('In-situ Measured Beta_{650} (1/sr)'); 
+set(gca,'FontSize',15)
+disp(['  Min. MAPE Unpol BETA.: ' num2str(min(MAPE_beta)) '   Min. MAPE Pol.: ' num2str(min(MAPE_beta_pol)) '   Min. MAPE Srg.: ' num2str(min(MAPE_beta_srg))  '   Min. MAPE WLR: ' num2str(min(MAPE_wlr_beta)) '   Min. MAPE WLR Srg: ' num2str(min(MAPE_wlr_beta_srg)) ]); %'   Min. MAPE Pol. Srg.: ' num2str(min(MAPE_chl_pol_srg))
+
+
 %%
 %plot the median value of the correlation coefficient for 30 runs
 %plots for ocean optics
 figure(44);
 %unpolarized = k, polarized = green, srg is red, wlr has x's, pol srg is
 %magenta
-plot(angle_center_chl+.5,corr_coeff_ratio_chl_median,'-ok','LineWidth',3);  hold on; plot(angle_center_chl_pol+.5,corr_coeff_ratio_chl_pol_median, '-oc','LineWidth',3);  hold off;
+subplot(211)
+plot(angle_center_chl,corr_coeff_ratio_chl_median,'Color',[.75 .75 .75],'LineWidth',3);  
+hold on; plot(angle_center_chl_pol,corr_coeff_ratio_chl_pol_median,'Color',[.5 .5 .5],'LineWidth',3);  hold off;
 %srg
-hold on; plot(angle_center_chl_srg+.5,corr_coeff_ratio_chl_srg_median,'-or','LineWidth',3); hold off;
+hold on; plot(angle_center_chl_srg,corr_coeff_ratio_chl_srg_median,'Color',[0 0 0],'LineWidth',3); hold off;
 %hold on; semilogy(angle_center_beta_srg,corr_coeff_ratio_beta_srg,'-.or'); hold off;
 %pol_srg
 %hold on; semilogy(angle_center_chl_pol_srg,corr_coeff_ratio_chl_pol_srg,'-om'); hold off;
 %hold on; semilogy(angle_center_beta_pol_srg,corr_coeff_ratio_beta_pol_srg,'-.om'); hold off;
 %WLR
-hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_chl_median,2000,'.b'); hold off;
+hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_chl_median,3000,'.g'); hold off;
 %hold on; plot(wlr_angle,corr_coeff_ratio_wlr_b,'xb'); hold off;
 %WLR
-hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_chl_srg_median,2000,'.m'); hold off;
+hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_chl_srg_median,3000,'.b'); hold off;
 %hold on; plot(wlr_angle,corr_coeff_ratio_wlr_b_srg,'xm'); hold off;
 
 %plotting labels
 ylabel('Correlation Coefficient (R^2)')
-title({'Correlation Coefficient Between Optically-Estimated' ' Chl a & Fluorometer-Measured Chl a'})
-legend('Camera Raw' ,'Camera Polarized', 'Camera SSGC',  'Radiometer Raw', 'Radiometer SSGC') %'Chl a Pol. Srg', '\beta_7_0_0 Pol. Srg',
+title({'Correlation Coefficient Between Remotely-Estimated' ' Chl a & Fluorometer-Measured Chl a'})
 grid on
 xlabel('View Angle \theta_v (degrees)')
 %l = legend('Fluorometer Measured Chl a','Unquenched Samples', 'Interpolated Chl a from Unquenched Samples')
-set(gca,'fontsize',35)
-set(gca,'XLim',[39 53])%,'XTick',39:5:53)
+set(gca,'fontsize',15)
+set(gca,'XLim',[39.5 53.5])%,'XTick',39:5:53)
+
+%%%Beta
+subplot(212)
+plot(angle_center_chl,corr_coeff_ratio_beta_median,'Color',[.75 .75 .75],'LineWidth',3);  
+hold on; plot(angle_center_chl_pol,corr_coeff_ratio_beta_pol_median,'Color',[.5 .5 .5],'LineWidth',3);  hold off;
+%srg
+hold on; plot(angle_center_chl_srg,corr_coeff_ratio_beta_srg_median,'Color',[0 0 0],'LineWidth',3); hold off;
+%hold on; semilogy(angle_center_beta_srg,corr_coeff_ratio_beta_srg,'-.or'); hold off;
+%pol_srg
+%hold on; semilogy(angle_center_chl_pol_srg,corr_coeff_ratio_chl_pol_srg,'-om'); hold off;
+%hold on; semilogy(angle_center_beta_pol_srg,corr_coeff_ratio_beta_pol_srg,'-.om'); hold off;
+%WLR
+hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_beta_median,3000,'.g'); hold off;
+%hold on; plot(wlr_angle,corr_coeff_ratio_wlr_b,'xb'); hold off;
+%WLR
+hold on; scatter(wlr_angle,corr_coeff_ratio_wlr_beta_srg_median,3000,'.b'); hold off;
+%hold on; plot(wlr_angle,corr_coeff_ratio_wlr_b_srg,'xm'); hold off;
+
+%plotting labels
+ylabel('Correlation Coefficient (R^2)')
+title({'Correlation Coefficient Between Remotely-Estimated' ' Beta_{650} & Fluorometer-Measured Beta_{650}'})
+%legend('Camera Raw' ,'Camera Polarized', 'Camera SSGC',  'Radiometer Raw', 'Radiometer SSGC') %'Chl a Pol. Srg', '\beta_7_0_0 Pol. Srg',
+grid on
+xlabel('View Angle \theta_v (degrees)')
+%l = legend('Fluorometer Measured Chl a','Unquenched Samples', 'Interpolated Chl a from Unquenched Samples')
+set(gca,'fontsize',15)
+set(gca,'XLim',[39.5 53.5])%,'XTick',39:5:53)
+legend('Camera Raw' ,'Camera Polarized', 'Camera SSGC',  'Radiometer Raw', 'Radiometer SSGC') %'Chl a Pol. Srg', '\beta_7_0_0 Pol. Srg',
 
 %%
 %plots for ocean optics
